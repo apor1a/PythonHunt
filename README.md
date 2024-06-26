@@ -14,20 +14,22 @@ domains.
 * WHOIS
 * VirusTotal
 * AlienVault OTX
+* Greynoise
 * Robtex
-* IBM X-Force
 * Shodan
 * ipinfo.io
 
 
 ##### API Keys Required for:
 * VirusTotal
-* IBM X-Force
+* Greynoise
 * Shodan
 
 If you do not wish to create an account to get an API key for these platforms,
-you can use the `-p` or `--platforms` argument to only enable the platforms you want
-to use.  See Example Usage below for more information.
+you can use the `-p` or `--platforms` argument to only enable the platforms you
+want to use.  See Example Usage below for more information.
+
+NOTE: All three of these APIs can be obtained with free accounts.
 
 
 #### Installation and Requirements
@@ -69,9 +71,9 @@ You can do this by using `-f` or `--file`.
 ```bash
 $ investigate -f IoC_file.txt
 ```
-Unfortunately, due to API rate limiting with the free APIs, you may only
+Unfortunately, due to API rate limiting with some of the free APIs, you may only
 look up 5 items per minute by default.
-If you have paid for API keys without limits,you can ignore this.
+If you have paid for API keys without limits, you can ignore this.
 
 Otherwise, you can also specify which APIs to use with the optional `-p`
 or `--platforms` flag.
@@ -89,70 +91,66 @@ $ investigate -f IoC_file.txt -p otx shodan
 #### Example Output
 
 ```bash
-$ investigate -i 193.34.167.111
+$ investigate -i 64.95.10.243
 _________________________________________
 
-    Investigating 193.34.167.111:
+    Investigating 64.95.10.243:
 
-    Connecting from Utrecht, Utrecht; NL.
-    IP belongs to AS62370 Snel.com B.V..
+    Connecting from Dallas, Texas; US.
+    IP belongs to AS399629 BL Networks.
 
 
     Shodan
     ----------
 
     Geolocation double-check:
-        Utrecht, Netherlands, 09; Owned by Snel.com B.V..
-
+        Dallas, United States, TX
+        Owned by BL Networks.
 
     Additional Shodan Info:
-        OS: No Data
-        Port(s): [80, 123, 443]
-        Hostname: ['srv-1.canajambe.io']
-        Last Updated: 2021-03-22T09:12:54.583341
+        OS: None
+        Port(s): [80, 443, 22]
+        Hostname: ['supfoundrysettlers.us']
+        Last Updated: 2024-06-21T00:06:36.008929
 
 
     VirusTotal
     ----------
 
     Scan Stats:
-    Country is not in VT dataset.
-    AS Owner is not found.
-    Harmless: No Data
-    Suspicious: No Data
-    Malicious: No Data
-    Undetected: No Data
+    Country is US
+    AS Owner is BLNWX
+    Harmless: 49
+    Suspicious: 2
+    Malicious: 16
+    Undetected: 26
 
 
     AlienVault OTX
     ----------
 
-    Pulse Count: 3
+    Pulse Count: 5
     Reputation Score: 0
-    Pulse Name(s): New macOS malware XcodeSpy Targets Xcode Developers with EggShell Backdoor, New macOS malware XcodeSpy Targets Xcode Developers with EggShell Backdoor, New macOS malware XcodeSpy Targets Xcode Developers with EggShell Backdoor - SentinelLabs
+    Pulse Name(s): Malvertising Campaign Leads to Execution of Oyster Backdoor, Malware campaign attempts abuse of defender binaries, Malvertising Campaign Leads to Execution of Oyster Backdoor | Rapid7 Blog, Malvertising Campaign Leads to Execution of Oyster Backdoor | Rapid7 Blog, malvertising campaign
 
 
-
-    IBM X-Force
+    Greynoise
     ----------
 
-    Recent Report Created: 2012-03-22T07:26:00.000Z
-    IP Geolocation: Netherlands
-    Reputation Score: 1
-    Report Created Reason: One of the five RIRs announced a (new) location mapping of the IP.
+    IP not found in Greynoise database.
 
 
     Robtex
     ----------
 
-    County: Netherlands
-    ASN: 62370, Snel
-    WHOIS Desc.: To determine the registration information for a more specific range, please try a more specific query. If you see this object as a result of a single IP query, it means the IP address is currently in the free pool of address space managed by the RIPE NCC.
-    BGP Route: 193.34.166.0/23
-    Active DNS Record: hosted-by.snelis.com
+    County: United States
+    ASN: 10910,
+    WHOIS Desc.: Carrington Capital (C01174673)
+    BGP Route: 64.95.0.0/20
+    Active DNS Record: None
     Active DNS History: None
     Passive DNS: None
-    Passive DNS History: ns2.hartelust.com, ns2.pernillasart.com, ns2.vesconet.com
+    Passive DNS History: None
 
   ```
 
@@ -169,41 +167,30 @@ __________________________________________________
     ----------
 
     Created on 2005-08-30 02:56:23
-    Expires on 2021-08-30 02:56:23
+    Expires on 2024-08-30 02:56:23
     Registrar: CSC Corporate Domains, Inc.
-    Last Updated: 2019-04-15 21:04:38
+    Last Updated: 2023-08-27 05:34:34
     Registered in: US
-    Name Servers: ns1.p16.dynect.net, ns2.p16.dynect.net, ns3.p16.dynect.net, ns4.p16.dynect.net
+    Name Servers: a1-204.akam.net, a16-64.akam.net, a28-65.akam.net, a3-67.akam.net, a4-66.akam.net, a9-66.akam.net, dns1.p04.nsone.net, dns2.p04.nsone.net, dns3.p04.nsone.net, dns4.p04.nsone.net
 
 
     VirusTotal
     ----------
 
     Domain Created: 2005-08-29 10:56:23
-    Alexa Rank: 355
-    Cisco Umbrella Rank: 24496
+    Alexa Rank: 821
+    Cisco Umbrella Rank: 11422
     Overall Reputation: 0
-    Harmless: 75
-    Suspicious: None.
-    Malicious: None.
-    Undetected: 7
+    Harmless: 67
+    Suspicious: 0
+    Malicious: 0
+    Undetected: 26
 
 
     AlienVault OTX
     ----------
 
-    Pulse Count: 1
-    Reputation Score: No Data
-    Pulse Name(s): xdgcdn.com -  cdn-me.com - squatting - phishing - icloud - itunes - music - inaudible - bluetooth - nfc - hacking the human
-
-
-    IBM X-Force
-    ----------
-
-    Name: Credit Karma
-    Score: 1
-    Description: A free credit and financial management platform
-    Categories: Financial Services / Insurance / Real Estate, Banking
+    No findings for this domain.
 
 ```
 
@@ -239,8 +226,8 @@ _________________________________________
 * [Python Whois](https://pypi.org/project/python-whois/)
 * [VirusTotal](https://virustotal.com)
 * [AlienVault](https://otx.alienvault.com)
+* [Greynoise](https://viz.greynoise.io)
 * [IP Info](https://ipinfo.io)
 * [Shodan](https://shodan.io)
-* [IBM X-Force Exchange](https://exchange.xforce.ibmcloud.com/)
 * [Robtex](https://www.robtex.com)
 
