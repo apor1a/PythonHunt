@@ -12,38 +12,36 @@ import shodan
 import whois
 
 # API Keys
-# API Keys are required for Shodan, VirusTotal, and IBM X-Force
+# API Keys are required for Shodan, VirusTotal, and Greynoise
 # Register with them here:
 # https://shodan.io
 # https://virustotal.com
-# https://exchange.xforce.ibmcloud.com/
+# https://viz.greynoise.io
 
-SHODAN_API = "{Your API Key Here}"
-VT_API = "{Your API Key Here}"
-# X-Force API is not actually the API key, but the base64 value of the API Key
-# and the API Password.  Do a test at the following documentation site to get
-# the value from the cURL request:
-# https://api.xforce.ibmcloud.com/doc/#IP_Reputation_get_ipr_ip
-XFORCE_API = "{Your base64'd API Key Here}"
+SHODAN_API = "[YOUR API KEY HERE]"
+VT_API = "[YOUR API KEY HERE]"
+GREYNOISE_API = "[YOUR API KEY HERE]"
 
 # Platforms
 ALIENVAULT_OTX = "otx"
-IBM_X_FORCE = "x-force"
+GREYNOISE = "greynoise"
 IPINFO_IO = "ipinfo"
-BGPVIEW = "bgpview"
+ROBTEX = "robtex"
 SHODAN = "shodan"
 VIRUSTOTAL = "vt"
 WHOIS = "whois"
+
 PLATFORMS = {
     ALIENVAULT_OTX,
-    IBM_X_FORCE,
+    GREYNOISE,
     IPINFO_IO,
-    BGPVIEW,
+    ROBTEX,
     SHODAN,
     VIRUSTOTAL,
     WHOIS,
 }
 RATELIMITED_PLATFORMS = {
+    ROBTEX,
     VIRUSTOTAL,
 }
 
@@ -256,84 +254,111 @@ def av_otx(target):
         )
 
 
-def bgpview(target):
+def robtex(target):
     """
-    Additional information on an IP including DNS or ptr_record, and network
-    block information.
+    Robtex provides acitve and passive DNS data, as well as BGP routing data.
     """
-    url = f"https://api.bgpview.io/ip/{target}"
-    response = requests.get(url)
-    data = response.json()
-
-    ptr = data["data"]["ptr_record"]
-    prefix = data["data"]["rir_allocation"]["prefix"]
-    ip = data["data"]["rir_allocation"]["ip"]
-    cidr = data["data"]["rir_allocation"]["cidr"]
-    allocated = data["data"]["rir_allocation"]["date_allocated"]
-
+    # Robtex doesn't accept the Python UA for some reason, so we need to set a
+    # custom UA.  This one is mimicking Firefox 90 on MacOS Big Sur.
+    # Change if desired.
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0"
+    }
+    data = requests.get(
+        f"https://freeapi.robtex.com/ipquery/{target}", headers=headers
+    ).json()
+    status = data["status"]
     print(
         """
-    BGPView
+    Robtex
     ----------"""
     )
-    if response.status_code == 200:
+    if status == "ok":
+        active_dns = [hit["o"] for hit in data.get("act", [])]
+        active_hist = [hit["o"] for hit in data.get("acth", [])]
+        passive_dns = [hit["o"] for hit in data.get("pas", [])]
+        passive_hist = [hit["o"] for hit in data.get("pash", [])]
         print(
             """
-    PTR Record: {}
-    Network Block: {}
-        IP: {}
-        CIDR: {}
-    Date Allocated: {}
-
-            """.format(
-            ptr if ptr else "No Data",
-            prefix if prefix else "No Data",
-            ip if ip else "No Data",
-            cidr if cidr else "No Data",
-            allocated if allocated else "No Data",
+    County: {}
+    ASN: {}, {}
+    WHOIS Desc.: {}
+    BGP Route: {}
+    Active DNS Record: {}
+    Active DNS History: {}
+    Passive DNS: {}
+    Passive DNS History: {}
+                """.format(
+                data.get("country", "No Data."),
+                data.get("as", "No Data."),
+                data.get("asname", "No Data."),
+                data.get("whoisdesc", "No Data."),
+                data.get("bgproute", "No Data."),
+                ", ".join(active_dns) if active_dns else "None",
+                ", ".join(active_hist) if active_hist else "None",
+                ", ".join(passive_dns) if passive_dns else "None",
+                ", ".join(passive_hist) if passive_hist else "None",
             )
+        )
+    elif status == "ratelimited":
+        print(
+            """
+    API Rate Limit reached. Try again soon.
+        """
         )
     else:
         print(
+            """
+    Robtex has no records.
         """
-    API Error {}
-        """).format(response.status_code)
+        )
 
 
-def xforce_ip(target):
+def greynoise(target):
     """
-    Checking IBM's X-Force Echange for crowdsourced intelligence on the IP.
+    Checking Greynoise for data on scanning IPs and "noisy" traffic.
     """
-    url = f"https://api.xforce.ibmcloud.com/ipr/{target}"
+    url = f"https://api.greynoise.io/v3/community/{target}"
     headers = {
-        "Accept": "application/json",
-        "Authorization": "Basic {}".format(XFORCE_API),
+        'key': GREYNOISE_API
     }
-    response = requests.get(url=url, headers=headers)
+    response = requests.request("GET", url, headers=headers)
     print(
         """
-    IBM X-Force
+    Greynoise
     ----------"""
     )
     if response.status_code == 200:
         data = response.json()
         print(
             """
-    Recent Report Created: {}
-    IP Geolocation: {}
-    Reputation Score: {}
-    Report Created Reason: {}
+    IP: {}
+    Noise: {}
+    RIOT: {}
+    Classification: {}
+    Name: {}
+    Last Seen: {}
+    Link: {}
             """.format(
-                data.get("history", {})[0].get("created", "No Data."),
-                data.get("history", {})[0].get("country", "No Data."),
-                data.get("history", {})[0].get("score", "No Data"),
-                data.get("history", {})[0].get("reasonDescription", "No Data."),
+                data.get("ip", "No Data."),
+                data.get("noise", "No Data."),
+                data.get("riot", "No Data"),
+                data.get("classification", "No Data."),
+                data.get("name", "No Data."),
+                data.get("last_seen", "No Data."),
+                data.get("link", "No Data.")
             )
+        )
+    elif response.status_code == 404:
+        print(
+            """
+    IP not found in Greynoise database.
+            """
         )
     else:
         print(
             """
-    X-Force Response Code: {}
+    Greynoise Response Code: {}
             """.format(
                 response.status_code
             )
@@ -498,59 +523,6 @@ def av_otx_domain(target):
         )
 
 
-def xforce_domain(target):
-    """
-    Checking IBM's X-Force Echange for crowdsourced intelligence on the domain.
-    """
-    url = "https://api.xforce.ibmcloud.com/url/{}".format(target)
-    headers = {
-        "Accept": "application/json",
-        "Authorization": "Basic {}".format(XFORCE_API),
-    }
-    response = requests.get(url=url, headers=headers)
-    data = response.json()
-    print(
-        """
-    IBM X-Force
-    ----------"""
-    )
-
-    if response.status_code == 200:
-        try:
-            categories = data["result"]["cats"].keys()
-        except TypeError as error:
-            print(error)
-        else:
-            application = data.get("result", {}).get("application", {})
-            print(
-                """
-    Name: {}
-    Score: {}
-    Description: {}
-    Categories: {}
-                """.format(
-                    application.get("name", "Not Found."),
-                    data.get("result", {}).get("score", "Not Found"),
-                    application.get("description", "Not Found."),
-                    ", ".join(categories),
-                )
-            )
-    elif response.status_code == 404:
-        print(
-            """
-    Domain not in X-Force database
-            """
-        )
-    else:
-        print(
-            """
-    Error: X-Force Response Code: {}
-            """.format(
-                response.status_code
-            )
-        )
-
-
 def ip_check(target, platforms):
     """
     Collection of all IP check functions to run.
@@ -563,10 +535,10 @@ def ip_check(target, platforms):
         vt_ip_check(target)
     if ALIENVAULT_OTX in platforms:
         av_otx(target)
-    if IBM_X_FORCE in platforms:
-        xforce_ip(target)
-    if BGPVIEW in platforms:
-        bgpview(target)
+    if GREYNOISE in platforms:
+        greynoise(target)
+    if ROBTEX in platforms:
+        robtex(target)
 
 
 def domain_check(target, platforms):
@@ -579,8 +551,6 @@ def domain_check(target, platforms):
         vt_domain_check(target)
     if ALIENVAULT_OTX in platforms:
         av_otx_domain(target)
-    if IBM_X_FORCE in platforms:
-        xforce_domain(target)
 
 
 if __name__ == "__main__":
