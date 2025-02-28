@@ -6,10 +6,13 @@ Script to assist in investigations by collecting IP data from various sources.
 
 import argparse
 from datetime import datetime
+
 import python_dotenv
 import requests
 import shodan
 import whois
+from dotenv import load_dotenv
+import os
 
 # API Keys
 # API Keys are required for Shodan, VirusTotal, and Greynoise
@@ -18,9 +21,9 @@ import whois
 # https://virustotal.com
 # https://viz.greynoise.io
 
-SHODAN_API = "[YOUR API KEY HERE]"
-VT_API = "[YOUR API KEY HERE]"
-GREYNOISE_API = "[YOUR API KEY HERE]"
+SHODAN_API = os.getenv("SHODAN_API")
+VT_API = os.getenv("VT_API")
+GREYNOISE_API = os.getenv("GREYNOISE_API")
 
 # Platforms
 ALIENVAULT_OTX = "otx"
