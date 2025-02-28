@@ -7,7 +7,7 @@ Script to assist in investigations by collecting IP data from various sources.
 import argparse
 from datetime import datetime
 
-import python_dotenv
+import dotenv
 import requests
 import shodan
 import whois
