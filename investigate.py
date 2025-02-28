@@ -6,7 +6,7 @@ Script to assist in investigations by collecting IP data from various sources.
 
 import argparse
 from datetime import datetime
-
+import python_dotenv
 import requests
 import shodan
 import whois
@@ -256,7 +256,7 @@ def av_otx(target):
 
 def robtex(target):
     """
-    Robtex provides acitve and passive DNS data, as well as BGP routing data.
+    Robtex provides active and passive DNS data, as well as BGP routing data.
     """
     # Robtex doesn't accept the Python UA for some reason, so we need to set a
     # custom UA.  This one is mimicking Firefox 90 on MacOS Big Sur.
