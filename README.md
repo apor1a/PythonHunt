@@ -2,6 +2,13 @@
 ## Quick OSINT checks for IPs and Domains during triage and investigations.
 
 ---
+## Apor1a's fork: 
+This fork is designed to add additonal functionality, including modifications to store API keys in a separate .env file to avoid hardcoding credentials. New features under development include:
+* Adding PDNS lookups
+* Improving Shodan output
+* Adding output to file capability
+
+---
 
 ### About
 This script queries APIs for various freely-available intelligence platforms
