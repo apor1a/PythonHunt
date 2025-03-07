@@ -73,8 +73,28 @@ def main():
         default=PLATFORMS,
         choices=PLATFORMS,
     )
+    parser.add_argument("--shodan-api", help="Shodan API key.")
+    parser.add_argument("--vt-api", help="VirusTotal API key.")
+    parser.add_argument("--greynoise-api", help="GreyNoise API key.")
+    parser.add_argument("-o", "--output", help="Output file to save results.")
     args = parser.parse_args()
 
+    # Update .env file with provided API keys
+    with open(".env", "a") as env_file:
+        if args.shodan_api:
+            env_file.write(f"SHODAN_API={args.shodan_api}\n")
+        if args.vt_api:
+            env_file.write(f"VT_API={args.vt_api}\n")
+        if args.greynoise_api:
+            env_file.write(f"GREYNOISE_API={args.greynoise_api}\n")
+
+    # Reload environment variables
+    load_dotenv()
+
+    # Redirect output to file if specified
+    if args.output:
+        sys.stdout = open(args.output, "w")
+    #begin other argument checks    
     if args.ipaddress:
         ip_check(args.ipaddress, args.platforms)
     elif args.domain:
@@ -99,7 +119,10 @@ def main():
                     domain_check(clean, args.platforms)
                 else:
                     print(f"Skipping {clean}, can't determine the type.")
-
+    # Close the output file if specified
+    if args.output:
+        sys.stdout.close()
+        sys.stdout = sys.__stdout__
 
 # Start of IP Check functions
 
