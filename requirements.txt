@@ -1,3 +1,5 @@
 requests
 shodan
 whois
+dotenv
+sys

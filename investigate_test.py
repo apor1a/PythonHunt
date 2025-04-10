@@ -19,16 +19,19 @@ import os
 # https://shodan.io
 # https://virustotal.com
 # https://viz.greynoise.io
-
+env_file = load_dotenv()
 SHODAN_API = os.getenv("SHODAN_API")
 VT_API = os.getenv("VT_API")
 GREYNOISE_API = os.getenv("GREYNOISE_API")
-
+API_keys = {
+    "SHODAN_API": SHODAN_API,
+    "VT_API": VT_API,
+    "GREYNOISE_API": GREYNOISE_API,
+}
 # Platforms
 ALIENVAULT_OTX = "otx"
 GREYNOISE = "greynoise"
 IPINFO_IO = "ipinfo"
-ROBTEX = "robtex"
 SHODAN = "shodan"
 VIRUSTOTAL = "vt"
 WHOIS = "whois"
@@ -37,64 +40,92 @@ PLATFORMS = {
     ALIENVAULT_OTX,
     GREYNOISE,
     IPINFO_IO,
-    ROBTEX,
     SHODAN,
     VIRUSTOTAL,
     WHOIS,
 }
 RATELIMITED_PLATFORMS = {
-    ROBTEX,
     VIRUSTOTAL,
 }
+###########################################################
+#FUNCTIONS AND MAIN
+
 
 
 def main():
-    """
-    Defining main parser for arguments passed to the script.
-    """
+    #Initiate the argument parser
+    parser= argparse.ArgumentParser(description="Investigate an IP address or Domain for available OSINT.")
+    # Add arguments to the parser
+    args = process_args(parser)
+    # Check if the script is being run with the correct arguments
+    preflight_check(args)
+    #run functions based on type arguments passed
+    run_functions(args)
 
-    parser = argparse.ArgumentParser(
-        description="Investigate an IP address or Domain for available OSINT."
-    )
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-i", "--ipaddress", help="IP to investigate.")
-    group.add_argument("-d", "--domain", help="Domain to investigate.")
-    group.add_argument(
-        "-f",
-        "--file",
-        help="File containing a list of IPs (1 per line, up to 5 if "
-        "using VirusTotal or Robtex due to API ratelimiting).",
-    )
-    parser.add_argument(
-        "-p",
-        "--platforms",
-        nargs="+",
-        default=PLATFORMS,
-        choices=PLATFORMS,
-    )
+############################################################
+#FUNCTIONS FOR ARGUMENTS AND PRE-FLIGHT CHECKS
+
+def process_args(parser):
+    parser.add_argument("-i", "--ipaddress", help="IP to investigate.")
+    parser.add_argument("-d", "--domain", help="Domain to investigate.")
+    parser.add_argument("-f", "--file", help="File containing a list of IPs")
+    # Add argument for API keys
     parser.add_argument("--shodan-api", help="Shodan API key.")
     parser.add_argument("--vt-api", help="VirusTotal API key.")
     parser.add_argument("--greynoise-api", help="GreyNoise API key.")
-    parser.add_argument("-o", "--output", help="Output file to save results.")
+    # Add argument for platforms
+    parser.add_argument("-p", "--platforms", nargs="+", choices=PLATFORMS, help="Platforms to use.")
     args = parser.parse_args()
-'''
-    # Update .env file with provided API keys
-    with open(".env", "a") as env_file:
-        if args.shodan_api:
-            env_file.write(f"SHODAN_API={args.shodan_api}\n")
-        if args.vt_api:
-            env_file.write(f"VT_API={args.vt_api}\n")
-        if args.greynoise_api:
-            env_file.write(f"GREYNOISE_API={args.greynoise_api}\n")
+    return args    
 
-'''
-    # Reload environment variables
-    load_dotenv()
 
-    # Redirect output to file if specified
-    if args.output:
-        sys.stdout = open(args.output, "w")
-    #begin other argument checks    
+
+
+
+def preflight_check(args):
+    '''
+    Preflight check to ensure that the script is being run with the correct arguments.
+    This includes checking for API keys and valid platforms.
+    '''
+    #Check IPs and Domains
+    if args.ipaddress and args.domain:
+        print("Please specify either an IP address or a domain, not both.")
+        sys.exit(1)
+    if args.ipaddress and args.file:
+        print("Please specify either an IP address or a file, not both.")
+        sys.exit(1)
+    if args.domain and args.file:
+        print("Please specify either a domain or a file, not both.")
+        sys.exit(1)
+    if args.ipaddress and not args.ipaddress.replace(".", "").isdigit():
+        print("Invalid IP address.")
+        sys.exit(1)
+    if args.domain and not args.domain.replace(".", "").isalnum():
+        print("Invalid domain.")
+        sys.exit(1)
+    # Check if API keys are provided
+    if not API_keys["SHODAN_API"] and not args.shodan_api:
+        print("Shodan API key is required.")
+        sys.exit(1)
+    if not API_keys["VT_API"] and not args.vt_api:
+        print("VirusTotal API key is required.")
+        sys.exit(1)
+    if not API_keys["GREYNOISE_API"] and not args.greynoise_api:
+        print("GreyNoise API key is required.")
+        sys.exit(1)
+    # Check if platforms are valide and provided
+     # Check if the platforms are valid
+    if args.platforms:
+        for platform in args.platforms:
+            if platform not in PLATFORMS:
+                print(f"Invalid platform: {platform}.")
+                sys.exit(1)
+
+#run functions based on type arguments passed
+def run_functions(args):
+    """
+    Run the appropriate functions based on the arguments passed.
+    """
     if args.ipaddress:
         ip_check(args.ipaddress, args.platforms)
     elif args.domain:
@@ -117,20 +148,26 @@ def main():
                     if is_ratelimited:
                         targets_processed_count += 1
                     domain_check(clean, args.platforms)
-                else:
-                    print(f"Skipping {clean}, can't determine the type.")
-    # Close the output file if specified
-    if args.output:
-        sys.stdout.close()
-        sys.stdout = sys.__stdout__
+            else:
+                print(f"Skipping {clean}, can't determine the type.") 
+    
 
+    # Add argument for output file
+    #parser.add_argument("-o", "--output", help="Output file to save results.")
+
+    # Redirect output to file if specified
+    #if args.output:
+    #    sys.stdout = open(args.output, "w")
+    #begin other argument checks 
+
+##############################################################################
 # Start of IP Check functions
 
 
 def geo_info(target):
-    """
-    Basic geolocation and IP ownership information.
-    """
+
+    #Basic geolocation and IP ownership information.
+
     data = requests.get(f"https://ipinfo.io/{target}/json").json()
     print(
         """_________________________________________
@@ -278,7 +315,7 @@ def av_otx(target):
                 response.status_code
             )
         )
-
+'''
 
 def robtex(target):
     """
@@ -338,7 +375,7 @@ def robtex(target):
     Robtex has no records.
         """
         )
-
+'''
 
 def greynoise(target):
     """
@@ -392,7 +429,6 @@ def greynoise(target):
 
 
 # Start of Domain Check functions
-
 
 def whois_lookup(target):
     """
@@ -563,8 +599,6 @@ def ip_check(target, platforms):
         av_otx(target)
     if GREYNOISE in platforms:
         greynoise(target)
-    if ROBTEX in platforms:
-        robtex(target)
 
 
 def domain_check(target, platforms):
