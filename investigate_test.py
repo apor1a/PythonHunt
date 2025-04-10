@@ -115,12 +115,13 @@ def preflight_check(args):
         sys.exit(1)
     # Check if platforms are valide and provided
      # Check if the platforms are valid
+"""
     if args.platforms:
         for platform in args.platforms:
             if platform not in PLATFORMS:
                 print(f"Invalid platform: {platform}.")
                 sys.exit(1)
-
+"""
 #run functions based on type arguments passed
 def run_functions(args):
     """
@@ -589,16 +590,16 @@ def ip_check(target, platforms):
     """
     Collection of all IP check functions to run.
     """
-    if IPINFO_IO in platforms:
-        geo_info(target)
-    if SHODAN in platforms:
-        shodan_check(target)
-    if VIRUSTOTAL in platforms:
-        vt_ip_check(target)
-    if ALIENVAULT_OTX in platforms:
-        av_otx(target)
-    if GREYNOISE in platforms:
-        greynoise(target)
+    #if IPINFO_IO in platforms:
+    geo_info(target)
+    #if SHODAN in platforms:
+    shodan_check(target)
+    #if VIRUSTOTAL in platforms:
+    vt_ip_check(target)
+    #if ALIENVAULT_OTX in platforms:
+    av_otx(target)
+    #if GREYNOISE in platforms:
+    greynoise(target)
 
 
 def domain_check(target, platforms):
