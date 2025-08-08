@@ -1,6 +1,6 @@
 import requests
 import os
-import datetime
+from datetime import datetime
 
 def vt_ip_check(target):
     VT_API = os.getenv("VT_API")

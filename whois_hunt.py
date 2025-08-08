@@ -1,4 +1,5 @@
 import whois
+import whoisdomain as whois
 
 def whois_lookup(target):
     """

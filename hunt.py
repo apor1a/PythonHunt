@@ -14,6 +14,7 @@ import virustotal_hunt
 import greynoise_hunt
 import geo_info
 import whois_hunt
+import ipinfo_hunt
 
 # API Keys
 # API Keys are required for Shodan, VirusTotal, and Greynoise
@@ -75,10 +76,6 @@ def process_args(parser):
    # parser.add_argument("-p", "--platforms", nargs="+", choices=PLATFORMS, help="Platforms to use.")
     args = parser.parse_args()
     return args    
-
-
-
-
 
 def preflight_check(args):
     '''
@@ -176,16 +173,16 @@ def ip_check(target):
     virustotal_hunt.vt_ip_check(target)
     #greynoise
     greynoise_hunt.greynoise_ip(target)
+    #ipinfo
+    ipinfo_hunt.fetch_ipinfo(target)
 
 
-def domain_check(target, platforms):
+def domain_check(target):
     """
     Collection of all Domain check functions to run.
     """
-    if WHOIS in platforms:
-        whois_hunt.whois_lookup(target)
-    if VIRUSTOTAL in platforms:
-        virustotal_hunt.vt_domain_check(target)
+    whois_hunt.whois_lookup(target)
+    virustotal_hunt.vt_domain_check(target)
 
 
 if __name__ == "__main__":
