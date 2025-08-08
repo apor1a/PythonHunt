@@ -1,4 +1,9 @@
+import requests
+import os
+import datetime
+
 def vt_ip_check(target):
+    VT_API = os.getenv("VT_API")
     """
     Checks VirusTotal for known malicious actions/malware associated with the IP.
     """
@@ -44,6 +49,7 @@ def vt_domain_check(target):
     """
     Checks VirusTotal for known malicious actions/malware associated with the Domain.
     """
+    VT_API = os.getenv("VT_API")
     url = f"https://www.virustotal.com/api/v3/domains/{target}"
     headers = {"x-apikey": VT_API}
     response = requests.get(url, headers=headers)

@@ -1,3 +1,5 @@
+import requests
+
 def geo_info(target):
 
     #Basic geolocation and IP ownership information.

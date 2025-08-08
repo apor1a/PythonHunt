@@ -7,12 +7,13 @@ Script to assist in investigations by collecting IP data from various sources.
 import argparse
 from datetime import datetime
 import sys
-import requests
-import shodan
-import whois
+import shodan_hunt
 from dotenv import load_dotenv
 import os
-import greynoise
+import virustotal_hunt
+import greynoise_hunt
+import geo_info
+import whois_hunt
 
 # API Keys
 # API Keys are required for Shodan, VirusTotal, and Greynoise
@@ -30,16 +31,12 @@ API_keys = {
     "GREYNOISE_API": GREYNOISE_API,
 }
 # Platforms
-ALIENVAULT_OTX = "otx"
-GREYNOISE = "greynoise"
 IPINFO_IO = "ipinfo"
 SHODAN = "shodan"
 VIRUSTOTAL = "vt"
 WHOIS = "whois"
 
 PLATFORMS = {
-    ALIENVAULT_OTX,
-    GREYNOISE,
     IPINFO_IO,
     SHODAN,
     VIRUSTOTAL,
@@ -73,9 +70,9 @@ def process_args(parser):
     # Add argument for API keys
     parser.add_argument("--shodan-api", help="Shodan API key.")
     parser.add_argument("--vt-api", help="VirusTotal API key.")
-    parser.add_argument("--greynoise-api", help="GreyNoise API key.")
+    #parser.add_argument("--greynoise-api", help="GreyNoise API key.")
     # Add argument for platforms
-    parser.add_argument("-p", "--platforms", nargs="+", choices=PLATFORMS, help="Platforms to use.")
+   # parser.add_argument("-p", "--platforms", nargs="+", choices=PLATFORMS, help="Platforms to use.")
     args = parser.parse_args()
     return args    
 
@@ -111,9 +108,6 @@ def preflight_check(args):
     if not API_keys["VT_API"] and not args.vt_api:
         print("VirusTotal API key is required.")
         sys.exit(1)
-    if not API_keys["GREYNOISE_API"] and not args.greynoise_api:
-        print("GreyNoise API key is required.")
-        sys.exit(1)
     # Check if platforms are valide and provided
      # Check if the platforms are valid
 """
@@ -129,9 +123,9 @@ def run_functions(args):
     Run the appropriate functions based on the arguments passed.
     """
     if args.ipaddress:
-        ip_check(args.ipaddress, args.platforms)
+        ip_check(args.ipaddress)
     elif args.domain:
-        domain_check(args.domain, args.platforms)
+        domain_check(args.domain)
     elif args.file:
         targets_processed_count = 0
         is_ratelimited = bool(set(args.platforms).intersection(RATELIMITED_PLATFORMS))
@@ -170,20 +164,18 @@ def run_functions(args):
 # Start of Domain Check functions
 
 
-def ip_check(target, platforms):
+def ip_check(target):
     """
     Collection of all IP check functions to run.
     """
-    #if IPINFO_IO in platforms:
-    geo_info(target)
-    #if SHODAN in platforms:
-    shodan_check(target)
-    #if VIRUSTOTAL in platforms:
-    vt_ip_check(target)
-    #if ALIENVAULT_OTX in platforms:
-    av_otx(target)
-    #if GREYNOISE in platforms:
-    greynoise(target)
+    #geoinfo
+    geo_info.geo_info(target)
+    #shodan
+    shodan_hunt.shodan_check(target)
+    #virustotal
+    virustotal_hunt.vt_ip_check(target)
+    #greynoise
+    greynoise_hunt.greynoise_ip(target)
 
 
 def domain_check(target, platforms):
@@ -191,11 +183,9 @@ def domain_check(target, platforms):
     Collection of all Domain check functions to run.
     """
     if WHOIS in platforms:
-        whois_lookup(target)
+        whois_hunt.whois_lookup(target)
     if VIRUSTOTAL in platforms:
-        vt_domain_check(target)
-    if ALIENVAULT_OTX in platforms:
-        av_otx_domain(target)
+        virustotal_hunt.vt_domain_check(target)
 
 
 if __name__ == "__main__":

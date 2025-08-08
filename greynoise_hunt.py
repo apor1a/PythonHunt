@@ -1,4 +1,9 @@
-def greynoise(target):
+
+import os
+
+import requests
+def greynoise_ip(target):
+    GREYNOISE_API = os.getenv("GREYNOISE_API")
     """
     Checking Greynoise for data on scanning IPs and "noisy" traffic.
     """

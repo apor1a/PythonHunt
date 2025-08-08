@@ -1,6 +1,8 @@
-from shodan import *
-
+import shodan
+import os
+from dotenv import load_dotenv
 def shodan_check(target):
+    SHODAN_API = os.getenv("SHODAN_API")
     """
     Double check geo and org information with Shodan, as well as pull
     additional information on the host.
@@ -12,7 +14,7 @@ def shodan_check(target):
     )
     try:
         data = shodan.Shodan(SHODAN_API).host(target)
-    except shodan_hunt.APIError as error:
+    except shodan.APIError as error:
         print(f"    {error}")
     else:
         print(
