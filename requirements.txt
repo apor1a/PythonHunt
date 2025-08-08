@@ -3,3 +3,4 @@ shodan
 whois
 dotenv
 sys
+ipinfo
