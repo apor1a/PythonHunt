@@ -7,14 +7,12 @@ This fork is designed to add additonal functionality, including modifications to
 * Adding PDNS lookups
 * Improving Shodan output
 * Adding output to file capability
-* *reworking whois module since original whois python library was deprecated in 2024
 
 Current changes from the original version include:
 * Secured API key management with a .env file and reworked how API keys are retreived.
 * Converted to module format. Working modules now include:
     * Shodan
     * VirusTotal
-    * whois
     * ipinfo
     * geoinfo
     * greynoise
