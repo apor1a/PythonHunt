@@ -55,6 +55,7 @@ def vt_domain_check(target):
     response = requests.get(url, headers=headers)
     data = response.json()
     attributes = data.get("data", {}).get("attributes", {})
+    who = attributes.get("whois")
     rank = data.get("data", {}).get("attributes", {}).get("popularity_ranks", {})
     last_analysis = (
         data.get("data", {}).get("attributes", {}).get("last_analysis_stats", {})
@@ -63,32 +64,46 @@ def vt_domain_check(target):
     print(
         """
     VirusTotal
-    ----------"""
+    ----------
+    
+    """
     )
     if response.status_code == 200:
+        print("""
+        WHOIS Data:
+        --------
+    """)
+        print(who)
+        
+        print("""
+
+        Virustotal Info:
+        --------
+    """)
         print(
-            """
-    Domain Created: {}
-    Alexa Rank: {}
-    Cisco Umbrella Rank: {}
-    Overall Reputation: {}
-    Harmless: {}
-    Suspicious: {}
-    Malicious: {}
-    Undetected: {}
-            """.format(
-                datetime.fromtimestamp(creation_date).strftime("%Y-%m-%d %I:%M:%S")
-                if creation_date
-                else "None",
-                rank.get("Alexa", {}).get("rank", "No Data."),
-                rank.get("Cisco Umbrella", {}).get("rank", "No Data."),
-                attributes.get("reputation", "No Data."),
-                last_analysis.get("harmless", "None."),
-                last_analysis.get("suspicious", "None."),
-                last_analysis.get("malicious", "None."),
-                last_analysis.get("undetected", "None."),
-            )
+            """       
+Domain Created: {}
+Alexa Rank: {}
+Cisco Umbrella Rank: {}
+Overall Reputation: {}
+Harmless: {}
+Suspicious: {}
+Malicious: {}
+Undetected: {}
+        """.format(
+            datetime.fromtimestamp(creation_date).strftime("%Y-%m-%d %I:%M:%S")
+            if creation_date
+            else "None",
+            rank.get("Alexa", {}).get("rank", "No Data."),
+            rank.get("Cisco Umbrella", {}).get("rank", "No Data."),
+            attributes.get("reputation", "No Data."),
+            last_analysis.get("harmless", "None."),
+            last_analysis.get("suspicious", "None."),
+            last_analysis.get("malicious", "None."),
+            last_analysis.get("undetected", "None."),
         )
+        )
+    
     else:
         print(
             """

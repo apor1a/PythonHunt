@@ -43,9 +43,7 @@ PLATFORMS = {
     VIRUSTOTAL,
     WHOIS,
 }
-RATELIMITED_PLATFORMS = {
-    VIRUSTOTAL,
-}
+
 ###########################################################
 #FUNCTIONS AND MAIN
 
@@ -82,7 +80,7 @@ def preflight_check(args):
     Preflight check to ensure that the script is being run with the correct arguments.
     This includes checking for API keys and valid platforms.
     '''
-    #Check IPs and Domains
+    #Check arguments for indicator type
     if args.ipaddress and args.domain:
         print("Please specify either an IP address or a domain, not both.")
         sys.exit(1)
@@ -123,8 +121,12 @@ def run_functions(args):
         ip_check(args.ipaddress)
     elif args.domain:
         domain_check(args.domain)
+    '''
+    This section is to be completed later to provide file support
+    
     elif args.file:
         targets_processed_count = 0
+        
         is_ratelimited = bool(set(args.platforms).intersection(RATELIMITED_PLATFORMS))
         with open(args.file) as file:
             for target in file:
@@ -144,7 +146,7 @@ def run_functions(args):
             else:
                 print(f"Skipping {clean}, can't determine the type.") 
     
-
+'''
     # Add argument for output file
     #parser.add_argument("-o", "--output", help="Output file to save results.")
 
@@ -165,23 +167,23 @@ def ip_check(target):
     """
     Collection of all IP check functions to run.
     """
-    #geoinfo
-    geo_info.geo_info(target)
-    #shodan
-    shodan_hunt.shodan_check(target)
     #virustotal
     virustotal_hunt.vt_ip_check(target)
+    #geoinfo
+    shodan_hunt.shodan_check(target)
     #greynoise
+    geo_info.geo_info(target)
+    #shodan
     greynoise_hunt.greynoise_ip(target)
     #ipinfo
-    ipinfo_hunt.fetch_ipinfo(target)
+    #ipinfo_hunt.fetch_ipinfo(target)
 
 
 def domain_check(target):
     """
     Collection of all Domain check functions to run.
     """
-    whois_hunt.whois_lookup(target)
+    #whois_hunt.whois_lookup(target)
     virustotal_hunt.vt_domain_check(target)
 
 

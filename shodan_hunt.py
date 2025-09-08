@@ -19,7 +19,7 @@ def shodan_check(target):
     else:
         print(
             """
-    Geolocation double-check:
+    Geolocation Info:
         {}, {}, {}
         Owned by {}.""".format(
                 data.get("city", "No Data."),
